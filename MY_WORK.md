@@ -132,17 +132,19 @@
 
 ## Your Development Log
 
-### Entry 1 - [Date and Time]
+### Entry 1 - [6/11/2026- 1:15pm]
 **What I did**:
-
+- first setups for the assignment
 **Details**:
-
+-forked the repository
+-cloned on vs code
+- changed id and studentinfo
 **Challenges**:
-
+- nothing really, everything was clear because i learned from assignment 1
 **Solution**:
-
+- none
 **Time spent**:
-
+-10 minutes
 ---
 
 ### Entry 2 - [Date and Time]
