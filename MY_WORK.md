@@ -162,17 +162,18 @@
 - 45 minutes
 ---
 
-### Entry 3 - [Date and Time]
+### Entry 3 - [7/11/2026 , 9:32pm]
 **What I did**:
-
+- added feature 2
 **Details**:
-
+- Added three locks (contextSwitchLock, completedProcessLock, serviceTimeLock), one per shared variable
+- Wraped the three update methods and the three getters in lock() + try/finally unlock()
 **Challenges**:
-
+- none
 **Solution**:
-
+- it was prettu easy because i understood the idea in feature 1
 **Time spent**:
-
+- 15 minutes
 ---
 
 ### Entry 4 - [Date and Time]
