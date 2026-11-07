@@ -147,17 +147,19 @@
 -10 minutes
 ---
 
-### Entry 2 - [Date and Time]
+### Entry 2 - [7/11/2026, 9:17pm]
 **What I did**:
-
+- added feature 1
 **Details**:
-
+- added ReentrantLock lock
+- imported concurrent.locks.ReentrantLock
+- protected several methods and variables in readyqueue.
 **Challenges**:
-
+- what excatly that needed to be capsulated
 **Solution**:
-
+- figured what changes 
 **Time spent**:
-
+- 45 minutes
 ---
 
 ### Entry 3 - [Date and Time]
