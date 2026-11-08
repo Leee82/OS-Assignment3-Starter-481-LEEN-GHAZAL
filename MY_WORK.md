@@ -176,17 +176,21 @@
 - 15 minutes
 ---
 
-### Entry 4 - [Date and Time]
+### Entry 4 - [8/11/2026- 12:10pm]
 **What I did**:
-
+- modified feature 3
 **Details**:
-
+- Added a semaphore that counts the processes waiting in the ready queue, and add() releases it each time a process is added
+- Each CPU blocks until a process is available instead of sleeping and polling
+- When the last process completes, the CPU releases one permit per CPU so all the others wake up and stop cleanly
 **Challenges**:
-
+- Choosing the semaphore’s starting value
+- CPUs hanging at the end
 **Solution**:
-
+- started it at 0, because the queue is empty at the start and each add() raises it by one.
+- The CPU that sees all processes completed calls release(totalCPUs), so the blocked CPUs wake up and stop.
 **Time spent**:
-
+- 45 minutes
 ---
 
 ### Entry 5 - [Date and Time]
