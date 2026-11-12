@@ -195,15 +195,16 @@
 
 ### Entry 5 - [Date and Time]
 **What I did**:
-
+completed the questions in mywork
 **Details**:
-
+- answered part b reflection
+- answered part c technecial
 **Challenges**:
-
+- it was dense and long
 **Solution**:
-
+- completed it slowly
 **Time spent**:
-
+- 60 minutes
 ---
 
 ### Entry 6 - [Optional - Date and Time]
@@ -249,7 +250,7 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+i learned that something like count = count + 1 is not really one step, it reads the number, adds one, then writes it back. if two threads do it at the same time they can read the same number and one increment just disappears, thats the race condition. i used ReentrantLock with try/finally so only one thread can be in that part at a time and the lock always gets released. the semaphore was different, it just counts the processes in the queue so the cpu can sleep instead of checking again and again. what surprised me was that the starter looked fine but the numbers were wrong every time. also forgetting the shutdown signal made the whole program hang.
 
 ## Question 2: What was the most challenging part of this assignment?
 
@@ -257,7 +258,7 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+the most challenging part was implementing feature 3, especially the shutdown of the cpus. i understood that the last cpu had to wake up the others with release(totalCPUs), but where to put it was hard. it was tough because i had the old polling loop and my new while(true) loop mixed together, so the shutdown code ended up outside the loop and never ran. because of that the cpus crashed and the verification block was wrong for everything except the busy waiting polls. i only fixed it after checking the braces one by one and keeping a single while(true) loop with the shutdown check as the last thing inside it.
 
 ## Question 3: How did you overcome the challenges you faced?
 
@@ -265,7 +266,7 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+i overcame them by going step by step and testing after every small change instead of doing all three features at once. i re-read the slides and the readme a few times to make sure i understood what each feature wanted before touching the code. when the output was wrong i added System.out.println in different places to see which cpu was picking which process. i also ran the program many times because the race conditions did not show up every run. for the braces problem i went through them one by one until i knew exactly where the while(true), run() and the class ended.
 
 ## Question 4: Where can synchronization concepts be applied in real-world applications?
 
@@ -273,7 +274,7 @@
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+synchronization is used in banking apps, for example when two people send money to the same account at the same time. the balance is shared data just like my counters, so without a lock one transfer could overwrite the other and money would disappear. ticket and seat booking works the same way, where the lock makes sure only one person can take the last seat. a print queue is like my ready queue, because a semaphore can count the waiting jobs and let the printer sleep until a new one arrives. websites with a shared counter, like likes or views, also need a lock so the number stays correct when thousands of users click at once.
 
 ### Optional: What would you like to learn more about?
 
@@ -307,20 +308,37 @@
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+all four values were wrong in my starter run: context switches 37 instead of 38, completed processes 15 instead of 16, service time 108338 instead of 111510, and busy waiting polls 742 instead of 0. the first three are lost updates, two cpus read the same old value, both add to it, and one increment disappears. the polls are not a race, it is just the cpus checking the empty queue again and again. the same bug can happen on a real machine without RaceWindow because count = count + 1 is really load, add, store, and a thread can be stopped or run on another core in the middle. it is hard to detect because it only happens when the timing is unlucky, so it does not crash and the program often looks fine.
 
 Verification block of the **original starter**:
 ```
-[Paste the verification block (or the exception/watchdog message) of the starter here]
+═══ VERIFICATION (expected values are computed from YOUR seed) ═══
+  Context switches (quanta executed)     expected 38       observed 37       ? MISMATCH
+  Completed processes                    expected 16       observed 15       ? MISMATCH
+  Total service time (ms)                expected 111510   observed 108338   ? MISMATCH
+  Busy-waiting polls (must be 0)         expected 0        observed 742      ? MISMATCH
+  ? At least one check failed (see the ? lines above): a race condition or busy waiting is still present.
+
+
 ```
 
 Verification block of **my final version**:
 ```
-[Paste the verification block of your final version here (all lines ✔)]
+═══ VERIFICATION (expected values are computed from YOUR seed) ═══
+  Context switches (quanta executed)     expected 38       observed 38       ?
+  Completed processes                    expected 16       observed 16       ?
+  Total service time (ms)                expected 111510   observed 111510   ?
+  Busy-waiting polls (must be 0)         expected 0        observed 0        ?
+  ? All shared values are consistent.
 ```
 
 **Explanation of the timeline:**
-[Explain the lost update step by step.]
+1. CPU-1 reads contextSwitchCount and gets 12 (tmp = 12)
+2. CPU-1 reaches RaceWindow.pause() and sleeps for 1 ms, still holding the old 12
+3. CPU-2 reads contextSwitchCount, nobody has written yet so it also gets 12 (tmp = 12)
+4. CPU-1 wakes up and writes 12 + 1 = 13
+5. CPU-2 wakes up and writes 12 + 1 = 13
+
 
 ## Question 2: Critical Sections and Lock Granularity
 
@@ -330,7 +348,13 @@ Verification block of **my final version**:
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+| `ReadyQueue.add()` (`list`, `map`) | `lock` (ReadyQueue) | two cpus adding at the same time could corrupt the list and the map |
+| `ReadyQueue.poll()` (`list`) | `lock` (ReadyQueue) | read head + remove head must be one step, or two cpus take the same process |
+| `ReadyQueue.processOf()` (`map`) | `lock` (ReadyQueue) | a HashMap is not safe to read while another thread does put() |
+| `ReadyQueue.snapshot()` (`list`, `map`) | `lock` (ReadyQueue) | looping over the list while it changes gives ConcurrentModificationException |
+| `incrementContextSwitch()` / `getContextSwitchCount()` (`contextSwitchCount`) | `contextSwitchLock` | read-pause-write can lose an increment, and a getter could read in the middle of an update |
+| `incrementCompletedProcess()` / `getCompletedProcessCount()` (`completedProcessCount`) | `completedProcessLock` | same lost update problem, and the shutdown check depends on this value being right |
+| `addServiceTime()` / `getTotalServiceTime()` (`totalServiceTime`) | `serviceTimeLock` | same lost update problem on the total service time |
 
 | Critical section (variable / method) | Lock used | Why it needs protection |
 |---|---|---|
@@ -345,7 +369,7 @@ Verification block of **my final version**:
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+in the starter a cpu that finds the queue empty sleeps 20 ms and checks again, over and over, so it wastes cpu time doing nothing, and my starter run showed 742 busy-waiting polls. my semaphore value is the number of processes waiting in the ready queue, it starts at 0 because the queue is empty when it is created, and after the 16 initial add() calls it is 16 (numProcesses), one release() for each process. in my final version an empty queue makes the cpu blocked in acquire() instead of running, so it uses no cpu time and the polls are 0. the last cpu calls release(totalCPUs) because no process will ever be added again, and the other cpus would stay blocked in acquire() forever, so the program would hang and only the watchdog would stop it
 
 ## Question 4: Classical Problems and Deadlock
 
@@ -356,24 +380,29 @@ Verification block of **my final version**:
 **Your Answer:** *(3-5 sentences)*
 
 **Classical problem and roles**:
-[Name the problem; who is the producer, who is the consumer?]
+producer-consumer problem (bounded buffer). the producers are the main thread (first adds) and a cpu that puts an unfinished process back with add(). the consumers are the cpus that take a process with acquire() and poll(). so every cpu plays both roles.
 
 **Semaphores for a bounded queue (name and initial value)**:
-[Name the three semaphores and their initial values.]
+- `empty` = K (the number of free slots, the queue starts empty)
+- `full` = 0 (the number of processes in the queue, nothing at the start)
+- `mutex` = 1 (only one thread can touch the queue at a time)
+
+producer: wait(empty), wait(mutex), add, signal(mutex), signal(full).
+consumer: wait(full), wait(mutex), remove, signal(mutex), signal(empty).
 
 **Deadlock scenario and prevention**:
-[Describe the scenario and the necessary condition you would break.]
+a cpu does wait(mutex) first and then wait(full) while the queue is empty. it is now blocked holding the mutex. a cpu that wants to add a process back needs that mutex to signal(full), so it waits forever, and both are stuck (the same happens in reverse if the queue is full and a producer holds the mutex while waiting for empty). the necessary condition i would break is hold and wait: always do wait(full) or wait(empty) first and take the mutex only after, so a thread never blocks while holding the mutex. for two locks taken in different orders, the broken condition would be circular wait, fixed by always taking them in the same order.
 
 ## Summary
 
 **Key concepts I understood through these questions:**
-1.
-2.
-3.
+1. a race condition happens because count = count + 1 is really read, add, write, so two threads can lose an update, and a lock with try/finally fixes it
+2. one lock per independent variable is faster than one big lock, and the ready queue needs its own separate lock
+3. a counting semaphore lets a cpu sleep until a process is available, and the last cpu must release(totalCPUs) or the others hang forever
 
 **Concepts I need to study more:**
-1.
-2.
+1. fair vs unfair locks and bounded waiting, because i only understand it in theory
+2. the bounded-buffer problem with three semaphores and the order of the wait() calls, so i can spot deadlocks faster
 
 ---
 
