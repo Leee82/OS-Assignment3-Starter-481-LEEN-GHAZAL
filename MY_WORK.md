@@ -224,14 +224,14 @@ completed the questions in mywork
 
 > 💡 **TIP:** Fill this in **last**, after all entries are written.
 
-**Total time spent on assignment**: [X hours]
+**Total time spent on assignment**: [3-4 hours]
 
 **Most challenging part**:
-
+- feature 3
 **Most interesting learning**:
-
+- semaphores
 **What I would do differently next time**:
-
+- start earlier
 ---
 
 # Part B: Reflection (0.5 mark)
